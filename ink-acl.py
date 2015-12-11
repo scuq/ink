@@ -102,8 +102,8 @@ def req_allowed_useragent(test,pgcon,username,src,uri,dst,dstisip,netbiosdomainn
 
         try:
 
-                logger.info("select * from req_allowed_useragent('"+useragent+"','"+src+"','"+uri+"','"+dst+"','"+dstisipstr+"')")
-                result = pgcon.query("select * from req_allowed_useragent('"+useragent+"','"+src+"','"+uri+"','"+dst+"','"+dstisipstr+"')").dictresult()
+                logger.info("select * from req_allowed_useragent('"+useragent+"','"+src+"',$$escape '"+uri+"'$$,'"+dst+"','"+dstisipstr+"')")
+                result = pgcon.query("select * from req_allowed_useragent('"+useragent+"','"+src+"',$$escape '"+uri+"'$$,'"+dst+"','"+dstisipstr+"')").dictresult()
 
                 result = result[len(result)-1]
 

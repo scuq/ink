@@ -1,3 +1,4 @@
+
 CREATE DATABASE ink WITH TEMPLATE = template0 OWNER = postgres;
 
 
@@ -84,7 +85,7 @@ FOR i IN 1..array_length(current_table_list, 1) LOOP
   IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = current_table_list[i])
   THEN
    RAISE NOTICE 'Creating table % with create_table_list_domains()', current_table_list[i];
-   PERFORM create_table_list_domains(current_table_list[i]);
+   PERFORM SELECT create_table_list_domains(current_table_list[i]);
   ELSE
    RAISE NOTICE 'Table % already exists.', current_table_list[i];
   END IF;
@@ -104,7 +105,7 @@ FOR i IN 1..array_length(current_table_list, 1) LOOP
   IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = current_table_list[i])
   THEN
    RAISE NOTICE 'Creating table % with create_table_list_urls()', current_table_list[i];
-   PERFORM create_table_list_urls(current_table_list[i]);
+   PERFORM SELECT create_table_list_urls(current_table_list[i]);
   ELSE
    RAISE NOTICE 'Table % already exists.', current_table_list[i];
   END IF;
@@ -125,7 +126,7 @@ FOR i IN 1..array_length(current_table_list, 1) LOOP
   IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = current_table_list[i])
   THEN
    RAISE NOTICE 'Creating table % with create_table_list_ips()', current_table_list[i];
-   PERFORM create_table_list_ips(current_table_list[i]);
+   PERFORM SELECT create_table_list_ips(current_table_list[i]);
   ELSE
    RAISE NOTICE 'Table % already exists.', current_table_list[i];
   END IF;
@@ -145,7 +146,7 @@ FOR i IN 1..array_length(current_table_list, 1) LOOP
   IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = current_table_list[i])
   THEN
    RAISE NOTICE 'Creating table % with create_table_list_custom_domains()', current_table_list[i];
-   PERFORM create_table_list_custom_domains(current_table_list[i]);
+   PERFORM SELECT create_table_list_custom_domains(current_table_list[i]);
   ELSE
    RAISE NOTICE 'Table % already exists.', current_table_list[i];
   END IF;
@@ -165,7 +166,7 @@ FOR i IN 1..array_length(current_table_list, 1) LOOP
   IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = current_table_list[i])
   THEN
    RAISE NOTICE 'Creating table % with create_table_list_custom_urls()', current_table_list[i];
-   PERFORM create_table_list_custom_urls(current_table_list[i]);
+   PERFORM SELECT create_table_list_custom_urls(current_table_list[i]);
   ELSE
    RAISE NOTICE 'Table % already exists.', current_table_list[i];
   END IF;
@@ -186,7 +187,7 @@ FOR i IN 1..array_length(current_table_list, 1) LOOP
   IF NOT EXISTS (SELECT 1 FROM pg_class WHERE relname = current_table_list[i])
   THEN
    RAISE NOTICE 'Creating table % with create_table_list_custom_ips()', current_table_list[i];
-   PERFORM create_table_list_custom_ips(current_table_list[i]);
+   PERFORM SELECT create_table_list_custom_ips(current_table_list[i]);
   ELSE
    RAISE NOTICE 'Table % already exists.', current_table_list[i];
   END IF;
@@ -204,14 +205,13 @@ ALTER FUNCTION public.create_all_list_tables() OWNER TO postgres;
 --
 -- Name: create_table_list_custom_domains(character varying); Type: FUNCTION; Schema: public; Owner: postgres
 --
-
 CREATE FUNCTION create_table_list_custom_domains(t_name character varying) RETURNS void
     LANGUAGE plpgsql
     AS $$BEGIN
 
 EXECUTE '
 
-CREATE TABLE list_custom_domains_'|| t_name ||' (
+CREATE TABLE '|| t_name ||' (
     id bigint NOT NULL,
     domain character varying NOT NULL,
     rev_domain character varying NOT NULL,
@@ -219,25 +219,25 @@ CREATE TABLE list_custom_domains_'|| t_name ||' (
     allowed boolean
 ); 
 
-GRANT SELECT ON TABLE list_custom_domains_'|| t_name ||' TO inkquerier;
+GRANT SELECT ON TABLE '|| t_name ||' TO inkquerier;
 
-ALTER TABLE public.list_custom_domains_'|| t_name ||' OWNER TO postgres;
+ALTER TABLE public.'|| t_name ||' OWNER TO postgres;
 
-CREATE SEQUENCE list_custom_domains_'|| t_name ||'_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE '|| t_name ||'_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
 
-ALTER TABLE public.list_custom_domains_'|| t_name ||'_id_seq OWNER TO postgres;
+ALTER TABLE public.'|| t_name ||'_id_seq OWNER TO postgres;
 
-ALTER SEQUENCE list_custom_domains_'|| t_name ||'_id_seq OWNED BY list_custom_domains_'|| t_name ||'.id;
+ALTER SEQUENCE '|| t_name ||'_id_seq OWNED BY '|| t_name ||'.id;
 
-ALTER TABLE ONLY list_custom_domains_'|| t_name ||' ALTER COLUMN id SET DEFAULT nextval(''list_custom_domains_'|| t_name ||'_id_seq''::regclass);
+ALTER TABLE ONLY '|| t_name ||' ALTER COLUMN id SET DEFAULT nextval('''|| t_name ||'_id_seq''::regclass);
 
-ALTER TABLE ONLY list_custom_domains_'|| t_name ||' ADD CONSTRAINT list_custom_domains_'|| t_name ||'_key UNIQUE (domain);
+ALTER TABLE ONLY '|| t_name ||' ADD CONSTRAINT '|| t_name ||'_key UNIQUE (domain);
 
-ALTER TABLE ONLY list_custom_domains_'|| t_name ||' ADD CONSTRAINT list_custom_domains_'|| t_name ||'_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY '|| t_name ||' ADD CONSTRAINT '|| t_name ||'_pkey PRIMARY KEY (id);
 
-CREATE INDEX list_custom_domains_'|| t_name ||'_col_rev_domain_idx ON list_custom_domains_'|| t_name ||' USING btree (rev_domain text_pattern_ops);
+CREATE INDEX '|| t_name ||'_col_rev_domain_idx ON '|| t_name ||' USING btree (rev_domain text_pattern_ops);
 
-CREATE TRIGGER on_insert_domain BEFORE INSERT OR UPDATE ON list_custom_domains_'|| t_name ||' FOR EACH ROW EXECUTE PROCEDURE "insertDomain"();
+CREATE TRIGGER on_insert_domain BEFORE INSERT OR UPDATE ON '|| t_name ||' FOR EACH ROW EXECUTE PROCEDURE "insertDomain"();
 
 
 ';
@@ -246,6 +246,7 @@ CREATE TRIGGER on_insert_domain BEFORE INSERT OR UPDATE ON list_custom_domains_'
 
 END
 $$;
+
 
 
 ALTER FUNCTION public.create_table_list_custom_domains(t_name character varying) OWNER TO postgres;
@@ -356,32 +357,32 @@ CREATE FUNCTION create_table_list_domains(t_name character varying) RETURNS void
 
 EXECUTE '
 
-CREATE TABLE list_domains_'|| t_name ||' (
+CREATE TABLE  '|| t_name ||' (
     id bigint NOT NULL,
     domain character varying NOT NULL,
     rev_domain character varying NOT NULL,
     category character varying
 ); 
 
-GRANT SELECT ON TABLE list_domains_'|| t_name ||' TO inkquerier;
+GRANT SELECT ON TABLE  '|| t_name ||' TO inkquerier;
 
-ALTER TABLE public.list_domains_'|| t_name ||' OWNER TO postgres;
+ALTER TABLE public. '|| t_name ||' OWNER TO postgres;
 
-CREATE SEQUENCE list_domains_'|| t_name ||'_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE  '|| t_name ||'_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
 
-ALTER TABLE public.list_domains_'|| t_name ||'_id_seq OWNER TO postgres;
+ALTER TABLE public. '|| t_name ||'_id_seq OWNER TO postgres;
 
-ALTER SEQUENCE list_domains_'|| t_name ||'_id_seq OWNED BY list_domains_'|| t_name ||'.id;
+ALTER SEQUENCE  '|| t_name ||'_id_seq OWNED BY  '|| t_name ||'.id;
 
-ALTER TABLE ONLY list_domains_'|| t_name ||' ALTER COLUMN id SET DEFAULT nextval(''list_domains_'|| t_name ||'_id_seq''::regclass);
+ALTER TABLE ONLY  '|| t_name ||' ALTER COLUMN id SET DEFAULT nextval('' '|| t_name ||'_id_seq''::regclass);
 
-ALTER TABLE ONLY list_domains_'|| t_name ||' ADD CONSTRAINT list_domains_'|| t_name ||'_key UNIQUE (domain);
+ALTER TABLE ONLY  '|| t_name ||' ADD CONSTRAINT  '|| t_name ||'_key UNIQUE (domain);
 
-ALTER TABLE ONLY list_domains_'|| t_name ||' ADD CONSTRAINT list_domains_'|| t_name ||'_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY  '|| t_name ||' ADD CONSTRAINT  '|| t_name ||'_pkey PRIMARY KEY (id);
 
-CREATE INDEX list_domains_'|| t_name ||'_col_rev_domain_idx ON list_domains_'|| t_name ||' USING btree (rev_domain text_pattern_ops);
+CREATE INDEX  '|| t_name ||'_col_rev_domain_idx ON  '|| t_name ||' USING btree (rev_domain text_pattern_ops);
 
-CREATE TRIGGER on_insert_domain BEFORE INSERT OR UPDATE ON list_domains_'|| t_name ||' FOR EACH ROW EXECUTE PROCEDURE "insertDomain"();
+CREATE TRIGGER on_insert_domain BEFORE INSERT OR UPDATE ON  '|| t_name ||' FOR EACH ROW EXECUTE PROCEDURE "insertDomain"();
 
 
 ';
@@ -404,27 +405,27 @@ CREATE FUNCTION create_table_list_ips(t_name character varying) RETURNS void
 
 EXECUTE '
 
-CREATE TABLE list_ips_'|| t_name ||' (
+CREATE TABLE '|| t_name ||' (
     id bigint NOT NULL,
     ip inet NOT NULL,
     category character varying
 ); 
 
-GRANT SELECT ON TABLE list_ips_'|| t_name ||' TO inkquerier;
+GRANT SELECT ON TABLE '|| t_name ||' TO inkquerier;
 
-ALTER TABLE public.list_ips_'|| t_name ||' OWNER TO postgres;
+ALTER TABLE public.'|| t_name ||' OWNER TO postgres;
 
-CREATE SEQUENCE list_ips_'|| t_name ||'_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE '|| t_name ||'_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
 
-ALTER TABLE public.list_ips_'|| t_name ||'_id_seq OWNER TO postgres;
+ALTER TABLE public.'|| t_name ||'_id_seq OWNER TO postgres;
 
-ALTER SEQUENCE list_ips_'|| t_name ||'_id_seq OWNED BY list_ips_'|| t_name ||'.id;
+ALTER SEQUENCE '|| t_name ||'_id_seq OWNED BY '|| t_name ||'.id;
 
-ALTER TABLE ONLY list_ips_'|| t_name ||' ALTER COLUMN id SET DEFAULT nextval(''list_ips_'|| t_name ||'_id_seq''::regclass);
+ALTER TABLE ONLY '|| t_name ||' ALTER COLUMN id SET DEFAULT nextval('''|| t_name ||'_id_seq''::regclass);
 
-ALTER TABLE ONLY list_ips_'|| t_name ||' ADD CONSTRAINT list_ips_'|| t_name ||'_key UNIQUE (ip);
+ALTER TABLE ONLY '|| t_name ||' ADD CONSTRAINT '|| t_name ||'_key UNIQUE (ip);
 
-ALTER TABLE ONLY list_ips_'|| t_name ||' ADD CONSTRAINT list_ips_'|| t_name ||'_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY '|| t_name ||' ADD CONSTRAINT '|| t_name ||'_pkey PRIMARY KEY (id);
 
 
 
@@ -450,29 +451,29 @@ CREATE FUNCTION create_table_list_urls(t_name character varying) RETURNS void
 
 EXECUTE '
 
-CREATE TABLE list_urls_'|| t_name ||' (
+CREATE TABLE '|| t_name ||' (
     id bigint NOT NULL,
     url character varying NOT NULL,
     category character varying
 ); 
 
-GRANT SELECT ON TABLE list_urls_'|| t_name ||' TO inkquerier;
+GRANT SELECT ON TABLE '|| t_name ||' TO inkquerier;
 
-ALTER TABLE public.list_urls_'|| t_name ||' OWNER TO postgres;
+ALTER TABLE public.'|| t_name ||' OWNER TO postgres;
 
-CREATE SEQUENCE list_urls_'|| t_name ||'_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+CREATE SEQUENCE '|| t_name ||'_id_seq START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
 
-ALTER TABLE public.list_urls_'|| t_name ||'_id_seq OWNER TO postgres;
+ALTER TABLE public.'|| t_name ||'_id_seq OWNER TO postgres;
 
-ALTER SEQUENCE list_urls_'|| t_name ||'_id_seq OWNED BY list_urls_'|| t_name ||'.id;
+ALTER SEQUENCE '|| t_name ||'_id_seq OWNED BY '|| t_name ||'.id;
 
-ALTER TABLE ONLY list_urls_'|| t_name ||' ALTER COLUMN id SET DEFAULT nextval(''list_urls_'|| t_name ||'_id_seq''::regclass);
+ALTER TABLE ONLY '|| t_name ||' ALTER COLUMN id SET DEFAULT nextval('''|| t_name ||'_id_seq''::regclass);
 
-ALTER TABLE ONLY list_urls_'|| t_name ||' ADD CONSTRAINT list_urls_'|| t_name ||'_key UNIQUE (url);
+ALTER TABLE ONLY '|| t_name ||' ADD CONSTRAINT '|| t_name ||'_key UNIQUE (url);
 
-ALTER TABLE ONLY list_urls_'|| t_name ||' ADD CONSTRAINT list_urls_'|| t_name ||'_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY '|| t_name ||' ADD CONSTRAINT '|| t_name ||'_pkey PRIMARY KEY (id);
 
-CREATE INDEX list_urls_'|| t_name ||'_col_rev_url_idx ON list_urls_'|| t_name ||' USING btree (url text_pattern_ops);
+CREATE INDEX '|| t_name ||'_col_rev_url_idx ON '|| t_name ||' USING btree (url text_pattern_ops);
 
 
 
