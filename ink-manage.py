@@ -763,7 +763,7 @@ def printNewExplain():
  	   ALTER ROLE inkquerier WITH NOSUPERUSER NOINHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION CONNECTION LIMIT 500 PASSWORD 'YOURPASSHERE' VALID UNTIL 'infinity';
 	   ALTER ROLE inkupdater WITH SUPERUSER NOINHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION CONNECTION LIMIT 2 PASSWORD 'YOURSUPERPASSHERE' VALID UNTIL 'infinity';
 
-	3) run ink-manage.py with --createdatabase and specify the database schema file ink.sql
+	3) run ink-manage.py as postgres user with ./ink-manage.py --create-database /tmp/ink/sql/ 
 
 	4) fill all cfg_ tables and the profiles tables with your data, for some parts ink-manage.py can be used.
 
@@ -951,8 +951,21 @@ def main():
         inkdb={}
 
 	if options.createdatabase:
-		if os.path.isfile(options.createdatabase):
-			execute("pgsql < "+options.createdatabase)
+		if os.path.isdir(options.createdatabase):
+
+			sqlfiles = [options.createdatabase+os.sep+"db.sql", options.createdatabase+os.sep+"types.sql", options.createdatabase+os.sep+"functions.sql", options.createdatabase+os.sep+"tables.sql", options.createdatabase+os.sep+"data_category.sql"]
+
+			for sqf in sqlfiles:
+				if os.path.isfile(sqf):
+
+					stdout, stderr = execute("psql < "+sqf)
+
+					for l in stdout:
+						print l
+
+					for l in stderr:
+						print l
+
 			sys.exit(0)
 		else:
 			print "given sql file "+options.createdatabase+" doesn't exist"
