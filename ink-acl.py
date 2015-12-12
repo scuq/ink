@@ -9,6 +9,8 @@
 import logging
 import pg
 import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 import time
 import codecs
 import ConfigParser
@@ -28,6 +30,13 @@ formatter = logging.Formatter('%(name)s[%(process)d]:%(levelname)s %(message)s')
 syslog.setFormatter(formatter)
 logger.addHandler(syslog)
 from optparse import OptionParser
+
+def make_unicode(input):
+    if type(input) != unicode:
+        input =  input.decode('ISO-8859-1').encode('UTF-8')
+        return input
+    else:
+        return input
 
 def isIp(addr):
         try:
@@ -83,6 +92,7 @@ def preparse(linesplitted):
 	uri=linesplitted[4]
 	if uri.count("://") > 0:
 		uri = uri.split("://")[1]
+	uri = uri.replace("'","''")
 	#useragent=str(linesplitted[5:len(linesplitted)-1])
 	useragent=" ".join(linesplitted[5:len(linesplitted)-1])
 
@@ -100,10 +110,12 @@ def req_allowed_useragent(test,pgcon,username,src,uri,dst,dstisip,netbiosdomainn
                 dstisipstr="t"
                 dst = str(IPAddress(dst))
 
+	_query = "select * from req_allowed_useragent('"+useragent+"','"+src+"', E'"+make_unicode(uri)+"','"+dst+"','"+dstisipstr+"')"
+
         try:
 
-                logger.info("select * from req_allowed_useragent('"+useragent+"','"+src+"',$$escape '"+uri+"'$$,'"+dst+"','"+dstisipstr+"')")
-                result = pgcon.query("select * from req_allowed_useragent('"+useragent+"','"+src+"',$$escape '"+uri+"'$$,'"+dst+"','"+dstisipstr+"')").dictresult()
+                logger.debug(_query)
+                result = pgcon.query(_query).dictresult()
 
                 result = result[len(result)-1]
 
@@ -112,7 +124,8 @@ def req_allowed_useragent(test,pgcon,username,src,uri,dst,dstisip,netbiosdomainn
 
         except:
                 result = {}
-                logging.error("db-error: "+str(sys.exc_info()[0])+" "+str(sys.exc_info()[1]))
+		logger.error(_query)
+                logger.error("db-error: "+str(sys.exc_info()[0])+" "+str(sys.exc_info()[1])+" q:"+_query)
                 error=True
 
         return result
@@ -127,11 +140,14 @@ def req_allowed(test,pgcon,username,src,uri,dst,dstisip,netbiosdomainname):
 		dstisipstr="t"
 		dst = str(IPAddress(dst))
 
+	_query = "select * from req_allowed_default('"+username+"','"+src+"',E'"+make_unicode(uri)+"','"+dst+"','"+netbiosdomainname+"','"+dstisipstr+"')"
+
         try:
 #                pgcon = pg.connect(db["name"],db["host"],int(db["port"]),None,None,db["user"],db["password"])
 
-		logger.info("select * from req_allowed_default('"+username+"','"+src+"','"+uri+"','"+dst+"','"+netbiosdomainname+"','"+dstisipstr+"')")
-                result = pgcon.query("select * from req_allowed_default('"+username+"','"+src+"','"+uri+"','"+dst+"','"+netbiosdomainname+"','"+dstisipstr+"')").dictresult()
+
+		logger.debug(_query)
+                result = pgcon.query(_query).dictresult()
 
 		result = result[len(result)-1]
 
@@ -141,7 +157,8 @@ def req_allowed(test,pgcon,username,src,uri,dst,dstisip,netbiosdomainname):
 
         except:
 		result = {}
-                logging.error("db-error: "+str(sys.exc_info()[0])+" "+str(sys.exc_info()[1]))
+		logger.error(_query)
+                logger.error("db-error: "+str(sys.exc_info()[0])+" "+str(sys.exc_info()[1])+" q:"+_query)
                 error=True
 
 	return result
@@ -236,7 +253,9 @@ def main():
 
 			except:
 				logger.error("req_allowed call failed: "+str(sys.exc_info()[0])+" "+str(sys.exc_info()[1]))
-				return False
+				logmsg=""
+				displaymsg="982235"
+				deny(logmsg,displaymsg,options.test)
 
 #			else:
 
