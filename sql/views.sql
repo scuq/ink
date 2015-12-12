@@ -1,4 +1,4 @@
-\ ink;
+\c ink;
 --
 -- PostgreSQL database dump
 --
