@@ -953,7 +953,7 @@ def main():
 	if options.createdatabase:
 		if os.path.isdir(options.createdatabase):
 
-			sqlfiles = [options.createdatabase+os.sep+"db.sql", options.createdatabase+os.sep+"types.sql", options.createdatabase+os.sep+"help_functions.sql", options.createdatabase+os.sep+"functions.sql", options.createdatabase+os.sep+"tables.sql", options.createdatabase+os.sep+"data_category.sql"]
+			sqlfiles = [options.createdatabase+os.sep+"db.sql", options.createdatabase+os.sep+"types.sql", options.createdatabase+os.sep+"help_functions.sql", options.createdatabase+os.sep+"functions.sql", options.createdatabase+os.sep+"tables.sql", options.createdatabase+os.sep+"views.sql", options.createdatabase+os.sep+"data_category.sql"]
 
 			for sqf in sqlfiles:
 				if os.path.isfile(sqf):
